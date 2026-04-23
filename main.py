@@ -23,9 +23,20 @@ load_dotenv()
 
 app = FastAPI(title=os.getenv("APP_NAME", "finagent-auth-service"))
 
+
+def _allowed_origins() -> list[str]:
+    origins: list[str] = []
+    seen: set[str] = set()
+    for raw_origin in os.getenv("ALLOWED_ORIGINS", "").replace("\n", ",").split(","):
+        origin = raw_origin.strip().rstrip("/")
+        if origin and origin not in seen:
+            origins.append(origin)
+            seen.add(origin)
+    return origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()],
+    allow_origins=_allowed_origins(),
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
