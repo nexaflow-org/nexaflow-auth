@@ -1,4 +1,4 @@
-name: Finagent frontend Image workflow pipeline
+name: Finagent frontend Image workflow pipelines
 
 on:
   push:
