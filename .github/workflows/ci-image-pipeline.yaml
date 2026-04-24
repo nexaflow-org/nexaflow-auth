@@ -126,4 +126,4 @@ jobs:
             sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
             sonar_project_key: ${{ secrets.SONAR_PROJECT_KEY }}
             workflow_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            report_url: ${{ needs.docker-build.outputs.report_url }}report_url: ${{ needs.docker-build.outputs.report_url }}
+            report_url: "${{ needs.docker-build.outputs.report_url }}report_url: ${{ needs.docker-build.outputs.report_url }}"
