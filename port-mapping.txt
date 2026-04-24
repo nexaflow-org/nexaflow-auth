@@ -1,0 +1,3 @@
+service=finagent-auth-service
+container_port=8001
+app_entrypoint=app.main:app
