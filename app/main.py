@@ -1,6 +1,7 @@
 import os
 import time
 from collections import defaultdict, deque
+from typing import Annotated
 
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -8,16 +9,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database import Base, engine, get_db
-from models import UserAccount
-from schemas import (
+from .database import Base, engine, get_db
+from .models import UserAccount
+from .schemas import (
     TokenResponse,
     TokenValidationRequest,
     TokenValidationResponse,
     UserCredentials,
     UserProfile,
 )
-from security import create_access_token, decode_access_token, hash_password, require_user, verify_password
+from .security import create_access_token, decode_access_token, hash_password, require_user, verify_password
 
 load_dotenv()
 
@@ -76,8 +77,8 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/api/v1/auth/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def signup(payload: UserCredentials, db: AsyncSession = Depends(get_db)) -> TokenResponse:
+@app.post("/api/v1/auth/signup", status_code=status.HTTP_201_CREATED)
+async def signup(payload: UserCredentials, db: Annotated[AsyncSession, Depends(get_db)]) -> TokenResponse:
     existing_user = await db.scalar(select(UserAccount).where(UserAccount.email == payload.email.lower()))
     if existing_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already registered.")
@@ -94,8 +95,8 @@ async def signup(payload: UserCredentials, db: AsyncSession = Depends(get_db)) -
     )
 
 
-@app.post("/api/v1/auth/login", response_model=TokenResponse)
-async def login(payload: UserCredentials, db: AsyncSession = Depends(get_db)) -> TokenResponse:
+@app.post("/api/v1/auth/login")
+async def login(payload: UserCredentials, db: Annotated[AsyncSession, Depends(get_db)]) -> TokenResponse:
     user = await db.scalar(select(UserAccount).where(UserAccount.email == payload.email.lower()))
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password.")
@@ -107,12 +108,12 @@ async def login(payload: UserCredentials, db: AsyncSession = Depends(get_db)) ->
     )
 
 
-@app.get("/api/v1/auth/me", response_model=UserProfile)
-async def me(current_user: dict = Depends(require_user)) -> UserProfile:
+@app.get("/api/v1/auth/me")
+async def me(current_user: Annotated[dict, Depends(require_user)]) -> UserProfile:
     return UserProfile(user_id=current_user["sub"], email=current_user["email"])
 
 
-@app.post("/api/v1/auth/token/validate", response_model=TokenValidationResponse)
+@app.post("/api/v1/auth/token/validate")
 async def validate_token(payload: TokenValidationRequest) -> TokenValidationResponse:
     decoded = decode_access_token(payload.token)
     return TokenValidationResponse(valid=True, user_id=decoded.get("sub"), email=decoded.get("email"))
@@ -121,4 +122,4 @@ async def validate_token(payload: TokenValidationRequest) -> TokenValidationResp
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host=os.getenv("APP_HOST", "0.0.0.0"), port=int(os.getenv("APP_PORT", "8001")), reload=True)
+    uvicorn.run("app.main:app", host=os.getenv("APP_HOST", "0.0.0.0"), port=int(os.getenv("APP_PORT", "8001")), reload=True)
