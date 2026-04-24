@@ -1,5 +1,6 @@
 import os
 from datetime import UTC, datetime, timedelta
+from typing import Annotated
 
 import bcrypt
 import jwt
@@ -44,7 +45,7 @@ def decode_access_token(token: str) -> dict:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token.") from exc
 
 
-async def require_user(token: str = Depends(oauth2_scheme)) -> dict:
+def require_user(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
     payload = decode_access_token(token)
     if not payload.get("sub") or not payload.get("email"):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Malformed token.")
