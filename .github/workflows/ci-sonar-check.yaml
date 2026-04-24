@@ -41,7 +41,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore Sonar cache
+      - name: Restore Sonar caches
         id: sonar-cache
         uses: actions/cache/restore@v4
         with:
