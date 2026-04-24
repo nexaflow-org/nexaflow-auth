@@ -44,7 +44,7 @@ runs:
           <div style="padding:24px;background:#f4f7fb;font-family:Arial,sans-serif;">
             <h2 style="margin:0 0 12px;color:#b91c1c;">FinAgent pipeline failure</h2>
             <p style="margin:0 0 16px;color:#334155;">
-              A workflow in the FinAgent auth service needs attention.
+              A workflow in the ${{ inputs.repository_name }} repository needs attention.
             </p>
 
             <p><b>Pipeline:</b> ${{ inputs.pipeline_name }}</p>

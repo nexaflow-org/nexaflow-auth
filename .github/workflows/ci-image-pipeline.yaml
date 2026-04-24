@@ -1,4 +1,4 @@
-name: Finagent frontend Image workflow pipelines
+name: Finagent Auth Image Pipeline
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
       - main
 
 concurrency:
-  group: finagent-frontend-${{ github.event.pull_request.number }}
+  group: finagent-auth-service-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 permissions:
@@ -71,7 +71,7 @@ jobs:
 
   docker-build:
     needs: gate
-    # if: ${{ needs.gate.outputs.should_build == 'true' }}
+    if: ${{ needs.gate.outputs.should_build == 'true' }}
     permissions:
       contents: read
       actions: read
@@ -82,7 +82,7 @@ jobs:
 
 
   update-helm-test-values:
-    name: Update customer test values in helm repos
+    name: Update auth test values in helm repo
     needs:
       - gate
       - docker-build
@@ -100,7 +100,7 @@ jobs:
 
 
   notify:
-      name: Notification for image pipeline
+      name: Notify auth image pipeline failure
       runs-on: ubuntu-latest
       needs:
         - gate
@@ -111,8 +111,8 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v4
 
-        - name: Send image pipeline notification
-          uses: ./.github/actions/notification-action
+        - name: Send auth image pipeline notification
+          uses: ./.github/actions/send-notification
           with:
             pipeline_name: ${{ github.workflow }}
             repository_name: ${{ github.repository }}
@@ -123,7 +123,5 @@ jobs:
             mail_from: ${{ secrets.MAIL_FROM }}
             mail_to: ${{ needs.get-email.outputs.email || secrets.MAIL_TO }}
             slack_webhook: ${{ secrets.SLACK_INCOMING_WEBHOOK }}
-            sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
-            sonar_project_key: ${{ secrets.SONAR_PROJECT_KEY }}
             workflow_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            report_url: "${{ needs.docker-build.outputs.report_url }}report_url: ${{ needs.docker-build.outputs.report_url }}"
+            report_url: ${{ needs.docker-build.outputs.report_url }}
