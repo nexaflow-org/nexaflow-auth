@@ -89,7 +89,7 @@ jobs:
     if: ${{ needs.gate.outputs.should_build == 'true' && needs.docker-build.result == 'success' }}
     uses: ./.github/workflows/update-helm-test.yaml
     with:
-      helm_repo: FinAgent-ORG/finagent-helm.git
+      helm_repo: nexaflow-org/nexaflow-helm.git
       helm_branch: main
       values_file: apps/test/finagent-auth-service/values-test.yaml
       image_tag: ${{ needs.docker-build.outputs.image_tag }}
